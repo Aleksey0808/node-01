@@ -1,0 +1,25 @@
+{
+  "name": "node-01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node contacts",
+    "start:dev": "nodemon contacts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aleksey0808/node-01.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Aleksey0808/node-01/issues"
+  },
+  "homepage": "https://github.com/Aleksey0808/node-01#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

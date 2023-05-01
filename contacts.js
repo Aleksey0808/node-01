@@ -1,69 +1,60 @@
-const yargs = require('yargs')
-const {hideBin} = require('yargs/helpers')
-const {program} = require('commander')
+const fs = require('fs/promises')
+const path = require('path')
+const { nanoid } = require('nanoid')
 
+const contactPath = path.join(__dirname, './db/contacts.json')
 
-
-const contactsPath = require('./db')
-
-const invokeActions = async ({ action, id, name, email, phone }) => {
-  switch (action) {
-    case 'read':
-      const allContacts = await contactsPath.getAll();
-    return console.log(allContacts);
-    case 'getById':
-      const contactId = await contactsPath.getById(id);
-      return console.log(contactId);
-    case 'addContact':
-    const addContact = await contactsPath.addContact({name, email, phone});
-    return console.log(addContact);
-    case 'updateContact':
-      const updateContactById = await contactsPath.updateContact(id, {name,email, phone});
-      return console.log(updateContactById);
-      case 'deleteContact':
-        const deleteContactById = await contactsPath.deleteContact(id);
-        return console.log(deleteContactById);
-        default: 
-        return console.log('Unknow action');
-  }
+const getAll = async () => {
+  const data = await fs.readFile(contactPath)
+  return JSON.parse(data)
 }
 
-// invokeActions({ action: 'read' })
-// invokeActions({ action: 'getById', id: 'AeHIrLTr6JkxGE6SN-0Rw' })
-// invokeActions({
-//   action: 'addContact',
-//   name: 'Stephen King',
-//   email: 'stephenking@gmail.com',
-//   phone: '0675896627',
-// })
-// invokeActions({ action: 'updateContact', 
-//   id: '793DZxqEqo_JYmgUtxqiw', 
-//   name: 'Stephen Ning',
-//   email: 'stephenking@gmail.com',
-//   phone: '0675896627', })
-// invokeActions({ action: 'deleteContact', id: 'rsKkOQUi80UsgVPCcLZZW',})
+const getById = async (id) => {
+  const contactId = String(id)
+  const contacts = await getAll()
+  const result = contacts.find((contact) => contact.id === contactId)
+  return result || null
+}
 
-// const actionIndex = process.argv.indexOf('--action');
-// if(actionIndex !== -1) {
-//   const action = process.argv[actionIndex + 1];
-//   invokeActions({action});
-//   console.log(action);
-// }
+const addContact = async (data) => {
+  const contacts = await getAll()
+  const newContact = {
+    id: nanoid(),
+    ...data,
+  }
+  contacts.push(newContact)
+  await fs.writeFile(contactPath, JSON.stringify(contacts, null, 2))
+  return newContact
+}
 
-// const arr = hideBin(process.argv)
-// const {argv} = yargs(arr)
-// invokeActions(argv)
+const updateContact = async (id, date) => {
+  const contactId = String(id)
+  const contacts = await getAll()
+  const index = contacts.findIndex((item) => item.id === id)
+  if (index === -1) {
+    return null
+  }
+  contacts[index] = { id, ...date }
+  await fs.writeFile(contactPath, JSON.stringify(contacts, null, 2))
+  return contacts[index]
+}
 
-program.option('a, --action, <type>')
-program.option('i, --id, <type>')
-program.option('n, --name, <type>')
-program.option('e, --email, <type>')
-program.option('p, --phone, <type>')
+const deleteContact = async (id) => {
+  const contactId = String(id)
+  const contacts = await getAll()
+  const index = contacts.findIndex((item) => item.id === id)
+  if (index === -1) {
+    return null
+  }
+  const [result] = contacts.splice(index, 1)
+  await fs.writeFile(contactPath, JSON.stringify(contacts, null, 2))
+  return result
+}
 
-program.parse()
-
-const options = program.opts()
-invokeActions(options)
-
-
-
+module.exports = {
+  getAll,
+  getById,
+  addContact,
+  updateContact,
+  deleteContact,
+}
